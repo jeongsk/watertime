@@ -31,7 +31,6 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: app/package-lock.json
 
       - name: Setup Ruby (for CocoaPods)
         uses: ruby/setup-ruby@v1
