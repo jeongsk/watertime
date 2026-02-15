@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WaterTimeApp</string>
+    <string name="widget_description">Track your daily water intake</string>
+</resources>
