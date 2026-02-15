@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm run dev|npm start)\",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] WaterTime: Dev server detected');console.error('[Hook] Make sure Docker services are running: npm run docker:up')\""
+          }
+        ],
+        "description": "Docker 서비스 상태 확인 알림"
+      },
+      {
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"git push\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] WaterTime: Review changes before push');console.error('[Hook] Ensure all console.log statements are removed');console.error('[Hook] Check environment variables are not committed')\""
+          }
+        ],
+        "description": "Git Push 전 검토 알림"
+      },
+      {
+        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx)$\" && !(tool_input.file_path matches \"test|spec\")",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] TypeScript file modified');console.error('[Hook] Consider adding type definitions');console.error('[Hook] Run: npm run lint to check for issues')\""
+          }
+        ],
+        "description": "TypeScript 파일 수정 알림"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path;if(p&&fs.existsSync(p)){const c=fs.readFileSync(p,'utf8');if(c.includes('console.log')){console.error('[Hook] WARNING: console.log found in '+p);console.error('[Hook] Remove console.log before committing')}}console.log(d)})\""
+          }
+        ],
+        "description": "console.log 검사"
+      },
+      {
+        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"app/src/.*\\\\.(ts|tsx)$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] React Native component modified');console.error('[Hook] Test on both iOS and Android if possible');console.error('[Hook] Check for platform-specific code handling')\""
+          }
+        ],
+        "description": "React Native 파일 수정 알림"
+      },
+      {
+        "matcher": "tool == \"Edit\" && tool_input.file_path matches \"server/src/.*\\\\.ts$\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] Backend API modified');console.error('[Hook] Update API documentation if needed');console.error('[Hook] Consider database migration impact')\""
+          }
+        ],
+        "description": "백엔드 API 파일 수정 알림"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('[Hook] WaterTime: Task completed');console.error('[Hook] Next steps:');console.error('[Hook] 1. Test the changes');console.error('[Hook] 2. Run: npm run lint');console.error('[Hook] 3. Commit if satisfied')\""
+          }
+        ],
+        "description": "작업 완료 후 다음 단계 안내"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"console.error('');console.error('💧 Welcome to WaterTime Development!');console.error('');console.error('Available commands:');console.error('  npm run dev          - Start all services');console.error('  npm run dev:app      - Start React Native app');console.error('  npm run dev:server   - Start backend server');console.error('  npm run docker:up    - Start Docker services');console.error('');console.error('Documentation:');console.error('  HARNESS_SETUP.md     - Development setup guide');console.error('  .claude/rules.md    - Coding rules');console.error('  .claude/agents.md   - AI agents guide');console.error('');\""
+          }
+        ],
+        "description": "WaterTime 개발 환경 환영 메시지"
+      }
+    ]
+  }
+}

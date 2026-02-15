@@ -1,0 +1,56 @@
+{
+  "name": "watertime",
+  "version": "1.0.0",
+  "description": "WaterTime - AI-based personalized hydration management service",
+  "private": true,
+  "workspaces": [
+    "app",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:app\"",
+    "dev:app": "npm run start --workspace=app",
+    "dev:server": "npm run dev --workspace=server",
+    "build": "npm run build --workspaces",
+    "build:app": "npm run build --workspace=app",
+    "build:server": "npm run build --workspace=server",
+    "test": "npm run test --workspaces",
+    "test:app": "npm run test --workspace=app",
+    "test:server": "npm run test --workspace=server",
+    "lint": "npm run lint --workspaces",
+    "lint:app": "npm run lint --workspace=app",
+    "lint:server": "npm run lint --workspace=server",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "db:setup": "npm run db:setup --workspace=server",
+    "db:migrate": "npm run db:migrate --workspace=server",
+    "db:seed": "npm run db:seed --workspace=server",
+    "db:studio": "npm run db:studio --workspace=server",
+    "docker:up": "docker-compose up -d postgres redis",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:tools": "docker-compose --profile tools up -d",
+    "setup": "./scripts/setup-dev.sh",
+    "clean": "rm -rf node_modules app/node_modules server/node_modules && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=22.11.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeongsk/watertime.git"
+  },
+  "keywords": [
+    "health",
+    "fitness",
+    "hydration",
+    "react-native",
+    "typescript"
+  ],
+  "author": "jeongsk",
+  "license": "MIT"
+}
