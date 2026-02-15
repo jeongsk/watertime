@@ -1,0 +1,5 @@
+// Widget Extension configuration
+CLANG_ENABLE_MODULES = YES;
+SWIFT_OPTIMIZATION_LEVEL = -O;
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) RELEASE;
+PRODUCT_BUNDLE_IDENTIFIER = com.watertimeapp.widget
