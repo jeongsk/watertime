@@ -41,11 +41,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Copy react-native to app/node_modules for Gradle
+      - name: Copy node_modules to app for React Native Gradle
         run: |
           mkdir -p app/node_modules
-          cp -r node_modules/@react-native app/node_modules/
-          cp -r node_modules/react-native app/node_modules/
+          cp -r node_modules/* app/node_modules/
 
       - name: Cache Gradle
         uses: actions/cache@v4
