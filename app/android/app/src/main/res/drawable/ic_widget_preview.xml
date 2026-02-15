@@ -19,9 +19,9 @@
     <text
         android:text="1250"
         android:fontFamily="sans-serif-medium"
-        android:textSize="24"
+        android:textSize="24sp"
         android:fillColor="#212121"
-        android:x="30"
-        android:y="50"/>
+        android:x="30dp"
+        android:y="50dp"/>
 
 </vector>
