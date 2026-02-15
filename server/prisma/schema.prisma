@@ -1,0 +1,89 @@
+// WaterTime Database Schema
+// Prisma Schema File
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User Model - 사용자 정보
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed password
+  name      String?
+  weight    Float?   // kg
+  height    Float?   // cm
+  goal      Int      @default(2000) // ml - 일일 목표
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  intakes        Intake[]
+  notifications  Notification[]
+  subscriptions  Subscription[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// Intake Model - 수분 섭취 기록
+model Intake {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int      // ml
+  timestamp DateTime @default(now())
+  source    String   @default("manual") // manual, healthkit, googlefit
+  note      String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@map("intakes")
+}
+
+// Notification Model - 알림 기록
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // reminder, achievement, tip
+  title     String
+  message   String
+  sentAt    DateTime @default(now())
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sentAt])
+  @@map("notifications")
+}
+
+// Subscription Model - 구독 정보
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String
+  plan            String   // free, pro, premium
+  status          String   // active, cancelled, expired
+  startDate       DateTime
+  endDate         DateTime?
+  autoRenew       Boolean  @default(true)
+  paymentProvider String?  // apple, google, stripe
+  paymentId       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("subscriptions")
+}
