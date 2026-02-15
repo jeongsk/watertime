@@ -1,0 +1,95 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/ios/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'app/ios/**'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: false
+        type: string
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Setup Ruby (for CocoaPods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ./app/ios
+
+      - name: Install app dependencies
+        working-directory: ./app
+        run: npm ci
+
+      - name: Install CocoaPods dependencies
+        working-directory: ./app/ios
+        run: |
+          gem install cocoapods
+          pod install
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Build IPA
+        working-directory: ./app/ios
+        run: |
+          xcodebuild -workspace WaterTimeApp.xcworkspace \
+            -scheme WaterTimeApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath WaterTimeApp.xcarchive \
+            archive
+
+          xcodebuild -exportArchive \
+            -archivePath WaterTimeApp.xcarchive \
+            -exportPath build \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Upload IPA as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WaterTime-IPA
+          path: app/ios/build/*.ipa
+          retention-days: 30
+
+      - name: Create Release (if tag provided)
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: WaterTime iOS ${{ inputs.release_tag }}
+          draft: false
+          prerelease: false
+          files: app/ios/build/*.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

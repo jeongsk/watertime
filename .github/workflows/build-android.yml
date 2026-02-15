@@ -1,0 +1,121 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: false
+        type: string
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install app dependencies
+        working-directory: ./app
+        run: npm ci
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Fix Gradle wrapper permissions
+        working-directory: ./app/android
+        run: chmod +x ./gradlew
+
+      - name: Create local.properties
+        working-directory: ./app/android
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "ndk.dir=$ANDROID_NDK_HOME" >> local.properties
+
+      - name: Build Release APK
+        working-directory: ./app/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Sign APK (if keystore available)
+        if: env.KEYSTORE_FILE != ''
+        working-directory: ./app/android
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_FILE" | base64 --decode > release.keystore
+          ./gradlew assembleRelease -PKEYSTORE_FILE=release.keystore -PKEYSTORE_PASSWORD=$KEYSTORE_PASSWORD -PKEY_ALIAS=$KEY_ALIAS -PKEY_PASSWORD=$KEY_PASSWORD
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WaterTime-APK
+          path: app/android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+
+      - name: Create Release (if tag provided)
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: WaterTime ${{ inputs.release_tag }}
+          draft: false
+          prerelease: false
+          files: app/android/app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload APK to latest release (on push to main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          name: WaterTime Latest Build
+          draft: false
+          prerelease: true
+          files: app/android/app/build/outputs/apk/release/*.apk
+          body: |
+            ## 최신 빌드
+
+            빌드 정보:
+            - 커밋: ${{ github.sha }}
+            - 브랜치: ${{ github.ref_name }}
+            - 날짜: ${{ github.event.head_commit.timestamp }}
+
+            ### 설치 방법
+            1. 아래 APK 파일을 다운로드하세요
+            2. 기기에서 APK를 실행하여 설치하세요
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
