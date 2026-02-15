@@ -59,11 +59,10 @@ jobs:
         working-directory: ./app/android
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
-          echo "ndk.dir=$ANDROID_NDK_HOME" >> local.properties
 
       - name: Build Release APK
         working-directory: ./app/android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Sign APK (if keystore available)
         if: env.KEYSTORE_FILE != ''
