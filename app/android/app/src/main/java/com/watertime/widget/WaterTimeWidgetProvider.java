@@ -88,11 +88,11 @@ public class WaterTimeWidgetProvider extends AppWidgetProvider {
 
         // Update progress bar color based on percentage
         if (percentage >= 100) {
-            views.setInt(R.id.widget_progress, "setProgressTintList",
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#4CAF50")));
+            views.setColor(R.id.widget_progress, "setProgressTintList",
+                    Color.parseColor("#4CAF50"));
         } else {
-            views.setInt(R.id.widget_progress, "setProgressTintList",
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#2196F3")));
+            views.setColor(R.id.widget_progress, "setProgressTintList",
+                    Color.parseColor("#2196F3"));
         }
 
         // Update widget
