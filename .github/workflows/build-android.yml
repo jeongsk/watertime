@@ -43,6 +43,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Read app version
+        id: app_version
+        run: echo "version=$(node -p "require('./app/package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Copy node_modules to app for React Native Gradle
         run: |
           mkdir -p app/node_modules
@@ -107,17 +111,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APK to edge release (on push to main)
+      - name: Upload APK to release (on push to main)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: edge
-          name: WaterTime Edge Build
+          tag_name: v${{ steps.app_version.outputs.version }}
+          name: WaterTime v${{ steps.app_version.outputs.version }}
           draft: false
-          prerelease: true
+          prerelease: false
           files: app/android/app/build/outputs/apk/release/*.apk
           body: |
-            ## 최신 빌드
+            ## WaterTime v${{ steps.app_version.outputs.version }}
 
             빌드 정보:
             - 커밋: ${{ github.sha }}
