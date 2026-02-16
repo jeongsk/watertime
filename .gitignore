@@ -52,3 +52,8 @@ secrets/
 mobile/ios/Pods/
 mobile/android/app/build/
 mobile/android/.gradle/
+
+# OMC state files
+.omc/
+**/.omc/
+
