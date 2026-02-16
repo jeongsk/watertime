@@ -210,48 +210,6 @@ router.put('/goal', authenticate, async (req, res: Response): Promise<void> => {
 
 /**
  * @swagger
- * /api/user/device:
- *   put:
- *     summary: Update device info
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               deviceId:
- *                 type: string
- *                 description: Unique device identifier
- *               fcmToken:
- *                 type: string
- *                 description: Firebase Cloud Messaging token (Android)
- *               apnsToken:
- *                 type: string
- *                 description: Apple Push Notification Service token (iOS)
- *     responses:
- *       200:
- *         description: Device info updated
- *       401:
- *         description: Unauthorized
- */
-router.put('/device', authenticate, async (req, res: Response): Promise<void> => {
-  try {
-    const userId = req.user!.id;
-
-    // Device endpoint not available in current schema
-    res.status(501).json({ error: 'Device management not implemented in current schema' });
-  } catch (error) {
-    console.error('Update device error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-/**
- * @swagger
  * /api/user/stats:
  *   get:
  *     summary: Get user statistics

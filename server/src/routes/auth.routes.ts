@@ -235,4 +235,66 @@ router.get('/me', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user and clear device tokens
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               deviceId:
+ *                 type: string
+ *                 description: Device ID to remove (optional, if not provided removes all devices)
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/logout', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'No token provided' });
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const { deviceId } = req.body;
+
+    // Remove device(s) on logout
+    if (deviceId) {
+      // Remove specific device
+      await prisma.device.deleteMany({
+        where: {
+          userId: decoded.id,
+          id: deviceId
+        }
+      });
+    } else {
+      // Remove all devices for this user
+      await prisma.device.deleteMany({
+        where: {
+          userId: decoded.id
+        }
+      });
+    }
+
+    res.json({ message: 'Logout successful' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 export default router;

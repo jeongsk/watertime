@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { AuthService } from '../services/authService';
+import { notificationService } from '../services/notificationService';
 import { User, AuthResponse } from '../types';
 
 interface AuthState {
@@ -89,6 +90,8 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
+        // Sync pending notification tokens after login
+        notificationService.syncPendingTokenRegistrations();
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;

@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import { getUserDeviceTokens } from '../controllers/device.controller';
 
 interface PushNotificationPayload {
   title: string;
@@ -61,7 +62,7 @@ export class PushNotificationService {
 
   /**
    * Send push notification to a specific user
-   * Note: You need to store device tokens for each user
+   * Fetches device tokens from database and sends notification
    */
   async sendPushNotification(
     userId: string,
@@ -73,28 +74,30 @@ export class PushNotificationService {
         return false;
       }
 
-      // In a real implementation, you would:
-      // 1. Fetch device tokens for this user from a database
-      // 2. Send the notification to each token
-      // For now, this is a placeholder
+      // Fetch device tokens for this user from database
+      const tokens = await getUserDeviceTokens(userId);
 
-      console.log(`Sending push notification to user ${userId}:`, payload);
+      if (tokens.length === 0) {
+        console.log(`No device tokens found for user ${userId}`);
+        return false;
+      }
 
-      // Example of how to send with FCM (when you have device tokens):
-      // const tokens = await this.getUserDeviceTokens(userId);
-      // const message = {
-      //   notification: {
-      //     title: payload.title,
-      //     body: payload.body
-      //   },
-      //   data: payload.data || {},
-      //   tokens: tokens
-      // };
-      //
-      // const response = await this.firebaseApp.messaging().sendMulticast(message);
-      // console.log('FCM response:', response);
+      console.log(`Sending push notification to user ${userId} (${tokens.length} devices):`, payload);
 
-      return true;
+      // Send notification to all device tokens
+      const message = {
+        notification: {
+          title: payload.title,
+          body: payload.body
+        },
+        data: payload.data || {},
+        tokens: tokens
+      };
+
+      const response = await this.firebaseApp.messaging().sendEachForMulticast(message);
+      console.log(`FCM response: ${response.successCount} success, ${response.failureCount} failed`);
+
+      return response.successCount > 0;
     } catch (error) {
       console.error('Send push notification error:', error);
       return false;

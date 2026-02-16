@@ -1,6 +1,7 @@
 import apiClient from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
+import { notificationService } from './notificationService';
 
 export const AuthService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -33,6 +34,7 @@ export const AuthService = {
       await apiClient.post('/auth/logout');
     } finally {
       await AsyncStorage.removeItem('token');
+      await notificationService.deactivateCurrentDevice();
     }
   },
 };

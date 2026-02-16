@@ -27,9 +27,29 @@ model User {
   intakes        Intake[]
   notifications  Notification[]
   subscriptions  Subscription[]
+  devices        Device[]
 
   @@index([email])
   @@map("users")
+}
+
+// Device Model - 디바이스 및 푸시 토큰 정보
+model Device {
+  id              String    @id @default(cuid())
+  userId          String
+  platform        String    // ios, android
+  fcmToken        String?   @unique  // Firebase Cloud Messaging token (Android)
+  apnsToken       String?   @unique  // Apple Push Notification Service token (iOS)
+  deviceInfo      String?   // Additional device information (JSON string)
+  lastUsedAt      DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
 }
 
 // Intake Model - 수분 섭취 기록

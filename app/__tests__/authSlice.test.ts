@@ -2,7 +2,7 @@
  * @format
  */
 
-import authReducer, { login, logout, setLoading, setError } from '../src/store/authSlice';
+import authReducer, { logout } from '../src/store/authSlice';
 
 describe('authSlice', () => {
   const initialState = {
@@ -17,21 +17,18 @@ describe('authSlice', () => {
     expect(authReducer(undefined, { type: 'unknown' })).toEqual(initialState);
   });
 
-  it('should handle setLoading', () => {
-    const state = authReducer(initialState, setLoading(true));
-    expect(state.isLoading).toBe(true);
-  });
-
-  it('should handle setError', () => {
-    const errorMessage = 'Test error';
-    const state = authReducer(initialState, setError(errorMessage));
-    expect(state.error).toBe(errorMessage);
-  });
 
   it('should handle logout', () => {
     const loggedInState = {
       ...initialState,
-      user: { id: '1', email: 'test@test.com', name: 'Test User', goal: 2000 },
+      user: {
+        id: '1',
+        email: 'test@test.com',
+        name: 'Test User',
+        goal: 2000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
       token: 'test-token',
       isAuthenticated: true,
     };

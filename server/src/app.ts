@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes';
 import intakeRoutes from './routes/intake.routes';
 import userRoutes from './routes/user.routes';
 import notificationRoutes from './routes/notification.routes';
+import deviceRoutes from './routes/device.routes';
 
 // Load environment variables
 dotenv.config();
@@ -51,8 +52,12 @@ app.get('/api', (req: Request, res: Response) => {
         profile: 'GET /api/user/profile',
         updateProfile: 'PUT /api/user/profile',
         updateGoal: 'PUT /api/user/goal',
-        updateDevice: 'PUT /api/user/device',
         stats: 'GET /api/user/stats'
+      },
+      devices: {
+        register: 'POST /api/devices',
+        list: 'GET /api/devices',
+        remove: 'DELETE /api/devices/:deviceId'
       },
       notifications: {
         list: 'GET /api/notifications',
@@ -70,6 +75,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/intake', intakeRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/devices', deviceRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

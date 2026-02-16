@@ -1,10 +1,33 @@
+/* eslint-disable */
 // Jest setup file for React Native
 
-import { configureStore } from '@reduxjs/toolkit';
-import { combineReducers } from '@reduxjs/toolkit';
-import authReducer from '../src/store/authSlice';
-import intakeReducer from '../src/store/intakeSlice';
-import userReducer from '../src/store/userSlice';
+// Mock react-native-push-notification
+jest.mock('react-native-push-notification', () => ({
+  configure: jest.fn(),
+  createChannel: jest.fn(),
+  getApplicationIconBadgeNumber: jest.fn(),
+  setApplicationIconBadgeNumber: jest.fn(),
+  cancelAllLocalNotifications: jest.fn(),
+  cancelLocalNotifications: jest.fn(),
+  getScheduledLocalNotifications: jest.fn(),
+  localNotification: jest.fn(),
+  localNotificationSchedule: jest.fn(),
+  requestPermissions: jest.fn(),
+  abandonPermissions: jest.fn(),
+  checkPermissions: jest.fn(),
+  subscribe: jest.fn(),
+  unregister: jest.fn(),
+  notification: jest.fn(),
+  Default: jest.fn(),
+}));
+
+// Mock @react-native-community/push-notification-ios
+jest.mock('@react-native-community/push-notification-ios', () => ({
+  addEventListener: jest.fn(),
+  requestPermissions: jest.fn(),
+  setApplicationIconBadgeNumber: jest.fn(),
+  getApplicationIconBadgeNumber: jest.fn(),
+}));
 
 // Mock AsyncStorage
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -62,3 +85,8 @@ jest.mock('@react-navigation/bottom-tabs', () => ({
 global.__createStoreId = () => {
   return 'test-store-id';
 };
+
+// Mock uuid
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'test-uuid-1234'),
+}));

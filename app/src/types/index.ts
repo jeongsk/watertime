@@ -124,3 +124,38 @@ export interface MonthlyStatsResponse {
     totalIntakes: number;
   };
 }
+
+// Device Types
+export interface DeviceInfo {
+  platform: 'ios' | 'android';
+  model: string;
+  osVersion: string;
+  appVersion: string;
+}
+
+export interface DeviceRegisterResponse {
+  device: Device;
+  tokenRegistered: boolean;
+}
+
+export interface Device {
+  id: string;
+  userId: string;
+  deviceId: string;
+  platform: 'ios' | 'android';
+  pushToken?: string;
+  isActive: boolean;
+  lastSeenAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DevicesListResponse {
+  devices: Device[];
+}
+
+export interface PendingDeviceSync {
+  token: string;
+  deviceInfo: DeviceInfo;
+  timestamp: number;
+}

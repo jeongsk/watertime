@@ -2,7 +2,7 @@
  * @format
  */
 
-import { api } from '../src/services/api';
+import api from '../src/services/api';
 
 // Mock axios
 jest.mock('axios', () => ({
